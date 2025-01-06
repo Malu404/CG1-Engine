@@ -11,11 +11,11 @@ class Camera {
     public:
         Vec3 pos, bg_color;
         Camera () : pos(Vec3()), bg_color(Vec3(1.0, 1.0, 1.0)), viewport(Viewport()) {}
-        Camera (Vec3 pos, float width, float height, float cols, float rows, float viewport_distance, Vec3 bg_color, Vec3 ambient_light) :
+        Camera (Vec3 pos, double width, double height, double cols, double rows, double viewport_distance, Vec3 bg_color, Vec3 ambient_light) :
             pos(pos), bg_color(bg_color), viewport(Viewport(Vec3(pos.x, pos.y, pos.z - viewport_distance), width, height, cols, rows)) {}
 
         void draw_scene(SDL_Renderer* renderer, Scene scene) {
-            SDL_SetRenderDrawColor(renderer, bg_color.x, bg_color.y, bg_color.z, 1.0);
+            SDL_SetRenderDrawColor(renderer, static_cast<Uint8>(bg_color.x), static_cast<Uint8>(bg_color.y), static_cast<Uint8>(bg_color.z), 255);
             SDL_RenderClear(renderer);
             Light light = scene.lights.front();
             for (Shape* s : scene.objects) {
@@ -27,14 +27,14 @@ class Camera {
 
                         auto [intersects, t1, t2] = s->intersects(r);
                         if (intersects && (t1 > 0.0 || t2 > 0.0)) {
-                            float min_t = ((t2 < 0.0) || (t1 < t2)) ? t1 : t2;
+                            double min_t = ((t2 < 0.0) || (t1 < t2)) ? t1 : t2;
                             Vec3 p_intersect = r.at(min_t);
                             Vec3 l = (light.pos - p_intersect).normalize(); // vetor apontando na direção da luz
                             Vec3 n = s->get_normal(p_intersect);
                             Vec3 r = (2.0 * (l.dot(n)))*n - l; // vetor l refletido na normal
 
-                            float nl = n.dot(l);
-                            float rl = r.dot(l);
+                            double nl = n.dot(l);
+                            double rl = r.dot(l);
                             if (nl < 0.0) { nl = 0.0; rl = 0.0; }
                             if (rl < 0.0) { rl = 0.0; }
 
@@ -55,20 +55,20 @@ class Camera {
     
     private:
         inline void draw_pixel(SDL_Renderer* renderer, int x, int y, Vec3 color) {
-            SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 1.0);
+            SDL_SetRenderDrawColor(renderer, static_cast<Uint8>(color.x), static_cast<Uint8>(color.y), static_cast<Uint8>(color.z), 255);
             SDL_RenderDrawPoint(renderer, x, y);
         }
 
         class Viewport {
         public:
             Vec3 pos, dx, dy, top_left, p00;
-            float width, height;
+            double width, height;
             int cols, rows;
             
             Viewport () {
                 Vec3 pos = Vec3(0.0, 0.0, -1.0);
-                float width = 1.0; float height = 1.0;
-                float cols = 256; float rows = 256;
+                double width = 1.0; double height = 1.0;
+                double cols = 256; double rows = 256;
 
                 Vec3 dx = Vec3(width/cols, 0.0, 0.0);
                 Vec3 dy = Vec3(0.0, height/cols, 0.0);
@@ -80,7 +80,7 @@ class Camera {
                 this->cols = cols; this->rows = rows;
             }
 
-            Viewport (Vec3 pos, float width, float height, float cols, float rows) {
+            Viewport (Vec3 pos, double width, double height, double cols, double rows) {
                 Vec3 dx = Vec3(width/cols, 0.0, 0.0);
                 Vec3 dy = Vec3(0.0, height/rows, 0.0);
                 Vec3 top_left = Vec3(pos.x - width/2.0, pos.y + height/2.0, pos.z);

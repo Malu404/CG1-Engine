@@ -1,0 +1,3 @@
+C:/Users/PAZ/Desktop/cg_j_cppugly/CG1-Engine/build/CMakeFiles/cg1.dir
+C:/Users/PAZ/Desktop/cg_j_cppugly/CG1-Engine/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/PAZ/Desktop/cg_j_cppugly/CG1-Engine/build/CMakeFiles/ZERO_CHECK.dir

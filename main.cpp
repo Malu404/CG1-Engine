@@ -3,8 +3,8 @@
 #include <typeinfo>
 #include <cmath>
 #include <chrono>
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
-
 #include "utils/vec3.h"
 #include "engine/camera.h"
 #include "engine/light.h"
@@ -13,21 +13,20 @@
 #include "engine/shapes/sphere.h"
 #include "engine/shapes/plane.h"
 
-
 using namespace std;
 
 int main() {
     Vec3 p0 = Vec3(0,0,0);
     
-    float aspect_ratio = 16.0/9.0;
-    float viewport_width = 3.2;
-    float viewport_height = viewport_width/aspect_ratio;
-    float viewport_distance = 1.0;
+    double aspect_ratio = 16.0 / 9.0;
+    double viewport_width = 3.2;
+    double viewport_height = viewport_width / aspect_ratio;
+    double viewport_distance = 1.0;
     int image_width = 960;
-    int image_height = image_width/aspect_ratio;
+    int image_height = static_cast<int>(image_width / aspect_ratio);
 
-    float sphere_radius = 1.0;
-    Vec3 sphere_center = Vec3(0,0, -(viewport_distance + sphere_radius));
+    double sphere_radius = 1.0;
+    Vec3 sphere_center = Vec3(0, 0, -(viewport_distance + sphere_radius));
 
     Vec3 plane_p0 = Vec3(0.0, -1.8, 0.0);
     Vec3 plane_normal = Vec3(0.0, 1.0, 0.0);
@@ -53,45 +52,56 @@ int main() {
     scene.add_light(light);
 
     // SDL init
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) { printf("SDL_Init Error: %s\n", SDL_GetError()); return 1; }
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) { 
+        printf("SDL_Init Error: %s\n", SDL_GetError()); 
+        return 1; 
+    }
     SDL_Window* window = SDL_CreateWindow("Hello SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, image_width, image_height, 0);
-    if (window == NULL) { printf("SDL_CreateWindow Error: %s\n", SDL_GetError()); SDL_Quit(); return 1; }
+    if (window == NULL) { 
+        printf("SDL_CreateWindow Error: %s\n", SDL_GetError()); 
+        SDL_Quit(); 
+        return 1; 
+    }
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == NULL) { printf("SDL_CreateRenderer Error: %s\n", SDL_GetError()); SDL_DestroyWindow(window); SDL_Quit(); return 1; }
+    if (renderer == NULL) { 
+        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError()); 
+        SDL_DestroyWindow(window); 
+        SDL_Quit(); 
+        return 1; 
+    }
 
     // contador de fps
     int frameCount = 0;
     auto startTime = std::chrono::high_resolution_clock::now();
+
     // main loop
+    bool running = true;
     SDL_Event event;
-    while (true) {
-        // event handler
-        while (SDL_PollEvent(&event) != 0) {
-            if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
-                goto quit;
+    while (running) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
             }
         }
 
-        // draw sphere
+        // Clear the screen
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+
+        // Draw the scene
         camera.draw_scene(renderer, scene);
 
-        // printa o FPS no terminal
-        frameCount++;
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsedTime = currentTime - startTime;
-        if (elapsedTime.count() >= 1.0) {
-            std::cout << "FPS: " << frameCount << std::endl;
-            frameCount = 0;
-            startTime = currentTime;
-        }
-    }
-    quit:
+        // Present the backbuffer
+        SDL_RenderPresent(renderer);
 
-    delete sphere;
-    // SDL_DestroyRenderer(renderer);
+        // Increment frame count
+        frameCount++;
+    }
+
+    // Cleanup
+    SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 
     return 0;
 }
-        
